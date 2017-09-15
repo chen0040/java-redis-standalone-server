@@ -24,5 +24,9 @@ To kill the redis server remotely, just call the following url:
 
 http://localhost:7379/kill
 
+# Note
+In case you want to modify the behavior the redis server and want to rebuild, you can run the make.ps1 on Windows
+or make.sh on Linux or Mac.
+
 
 
