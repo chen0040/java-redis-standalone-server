@@ -2,12 +2,18 @@ package com.github.chen0040.redis.server.controllers;
 
 
 import com.github.chen0040.redis.server.services.VersionService;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -16,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class CommandController {
 
+   private ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
 
    @Autowired
    private VersionService versionService;
@@ -24,10 +31,22 @@ public class CommandController {
    private String appName;
 
    @RequestMapping(value="/kill", method= RequestMethod.GET)
-   public void kill(){
+   public @ResponseBody Map<String, Object> kill(){
+      Map<String, Object> result = new HashMap<>();
       if(versionService.isDefaultProfile()){
-         System.exit(0);
+         result.put("status", "redis will be killed in 100 milliseconds");
+         service.submit(()->{
+            try {
+               Thread.sleep(100);
+            }
+            catch (InterruptedException e) {
+               e.printStackTrace();
+            }
+            System.exit(0);
+         });
       }
+
+      return result;
    }
 
    @RequestMapping(value="/ping", method= RequestMethod.GET)
